@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: jdbc:${DATABASE}://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: ${DIALECT}
+  profiles:
+    active: dev
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    filter: true
+    tagsSorter: alpha
+server:
+  port: 9090
+
+sendinblue:
+  mail:
+    api_key: ${sendinblue_api}
+    url: ${sendinblue_mail}
+
+app:
+  name: ${app_name}
+  email: ${app_email}
+
+access_expiration: ${access_token}
+refresh_expiration: ${refresh_token}
+
+Jwt_Secret_Key: ${SECRET_KEY}
