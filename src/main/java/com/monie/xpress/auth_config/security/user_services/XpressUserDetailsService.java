@@ -14,9 +14,7 @@ public class XpressUserDetailsService implements UserDetailsService {
 
     private final UserService userService;
     @Override
-    public UserDetails loadUserByUsername(
-            String username
-    ) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
         final User user = userService.findUserByEmail(username);
         return new AuthenticatedUser(user);
     }

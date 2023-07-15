@@ -19,6 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+import static com.monie.xpress.xpress_utils.XpressConstants.BEARER;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Slf4j
@@ -36,8 +37,8 @@ public class XpressAuthorizationFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader(AUTHORIZATION);
         if (StringUtils.hasText(authHeader) &&
-                StringUtils.startsWithIgnoreCase(authHeader, "Bearer ")) {
-            final String accessToken = authHeader.substring(7);
+                StringUtils.startsWithIgnoreCase(authHeader, BEARER)) {
+            final String accessToken = authHeader.substring(BEARER.length());
             if (jwtService.isValid(accessToken) &&
                     xpressTokenService.isTokenValid(accessToken)) {
                 final String email = jwtService.extractUsernameFromToken(accessToken);
