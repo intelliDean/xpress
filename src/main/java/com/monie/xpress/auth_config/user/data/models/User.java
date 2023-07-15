@@ -33,5 +33,5 @@ public class User {
 
     private LocalDateTime registeredAt = LocalDateTime.now();
 
-    private boolean isEnable;
+    private boolean isEnabled;
 }
