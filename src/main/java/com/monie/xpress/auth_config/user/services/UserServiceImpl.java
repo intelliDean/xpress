@@ -8,6 +8,7 @@ import com.monie.xpress.auth_config.user.data.dtos.UserDTO;
 import com.monie.xpress.auth_config.user.data.models.User;
 import com.monie.xpress.auth_config.user.data.models.XpressToken;
 import com.monie.xpress.auth_config.user.data.repositories.UserRepository;
+import com.monie.xpress.xceptions.UserNotAuthorizedException;
 import com.monie.xpress.xceptions.UserNotFoundException;
 import com.monie.xpress.xceptions.XpressException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -32,41 +34,38 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Service
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
-
     private final XpressTokenService xpressTokenService;
     private final UserRepository userRepository;
     private final JwtService jwtService;
+
     @Override
     public User findUserByEmail(String email) {
         return findUser(email).orElseThrow(UserNotFoundException::new);
     }
+
     private Optional<User> findUser(String email) {
-        return userRepository.findByEmailAddress(email);
+        return userRepository.findUserByEmailAddress(email);
     }
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
         final String header = request.getHeader(AUTHORIZATION);
-        if (StringUtils.hasText(header) &&
-                StringUtils.startsWithIgnoreCase(header, BEARER)) {
+        if (StringUtils.hasText(header) && StringUtils.startsWithIgnoreCase(header, BEARER)) {
             final String accessToken = header.substring(BEARER.length());
+
             if (jwtService.isValid(accessToken)) {
                 xpressTokenService.revokeToken(accessToken);
                 SecurityContextHolder.clearContext();
 
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                new ObjectMapper().writeValue(
-                        response.getOutputStream(),
-                        "User Logout successfully"
-                );
+                new ObjectMapper().writeValue(response.getOutputStream(), "User Logout successfully");
             }
         }
     }
 
     @Override
     public User getCurrentUser() {
-       try {
+        try {
             final AuthenticatedUser authenticatedUser =
                     (AuthenticatedUser) SecurityContextHolder
                             .getContext()
@@ -74,7 +73,7 @@ public class UserServiceImpl implements UserService {
                             .getPrincipal();
             return authenticatedUser.getUser();
         } catch (Exception ex) {
-            throw new UserNotFoundException();
+            throw new UserNotAuthorizedException();
         }
     }
 
@@ -90,7 +89,9 @@ public class UserServiceImpl implements UserService {
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String authHeader = request.getHeader(AUTHORIZATION);
         if (!StringUtils.hasText(authHeader) ||
-                !StringUtils.startsWithIgnoreCase(authHeader, BEARER)) return;
+                !StringUtils.startsWithIgnoreCase(authHeader, BEARER))
+            return;
+
         final String refreshToken = authHeader.substring(BEARER.length());
 
         if (jwtService.isValid(refreshToken)) {
@@ -108,19 +109,31 @@ public class UserServiceImpl implements UserService {
                                 .accessToken(accessToken)
                                 .refreshToken(refreshToken)
                                 .build();
-                final XpressToken xpressToken = xpressTokenService.getValidTokenByAnyToken(refreshToken)
-                        .orElseThrow(() -> new XpressException("Token could not be found"));
+                final XpressToken xpressToken =
+                        xpressTokenService.getValidTokenByAnyToken(refreshToken)
+                                .orElseThrow(() -> new XpressException("Token could not be found"));
                 xpressToken.setAccessToken(accessToken);
                 xpressTokenService.saveToken(xpressToken);
 
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                new ObjectMapper()
-                        .writeValue(
-                                response.getOutputStream(),
-                                newLoginTokens
-                        );
+                new ObjectMapper().writeValue(response.getOutputStream(), newLoginTokens);
             }
         }
+    }
+
+    @Override
+    public void saveUser(User user) {
+        userRepository.save(user);
+    }
+
+    @Override
+    public void deleteUser(User user) {
+        userRepository.delete(user);
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
     private static Map<String, Object> getUserAuthority(User savedUser) {

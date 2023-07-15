@@ -36,6 +36,7 @@ public class XpressAuthenticationFilter extends UsernamePasswordAuthenticationFi
     private final UserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
     private final JwtService jwtService;
+
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try {
@@ -58,7 +59,11 @@ public class XpressAuthenticationFilter extends UsernamePasswordAuthenticationFi
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+    protected void successfulAuthentication(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain chain,
+            Authentication authResult) throws IOException, ServletException {
 
         final Map<String, Object> claims = new HashMap<>();
         authResult.getAuthorities().forEach(
@@ -69,7 +74,7 @@ public class XpressAuthenticationFilter extends UsernamePasswordAuthenticationFi
         final String accessToken = jwtService.generateAccessToken(claims, email);
         final String refreshToken = jwtService.generateRefreshToken(email);
 
-       final AuthenticatedUser authenticatedUser =
+        final AuthenticatedUser authenticatedUser =
                 (AuthenticatedUser) userDetailsService.loadUserByUsername(email);
 
         final XpressToken heroToken = XpressToken.builder()
@@ -79,15 +84,14 @@ public class XpressAuthenticationFilter extends UsernamePasswordAuthenticationFi
                 .revoked(false)
                 .expired(false)
                 .build();
-        xpressTokenService .saveToken(heroToken);
+        xpressTokenService.saveToken(heroToken);
 
-        final XpressAuthToken authenticationToken =
-                XpressAuthToken.builder()
-                        .accessToken(accessToken)
-                        .refreshToken(refreshToken)
-                        .build();
+        final XpressAuthToken xpressAuthToken = XpressAuthToken.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        objectMapper.writeValue(response.getOutputStream(), authenticationToken);
+        objectMapper.writeValue(response.getOutputStream(), xpressAuthToken);
     }
 }

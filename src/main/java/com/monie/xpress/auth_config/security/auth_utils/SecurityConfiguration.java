@@ -34,15 +34,15 @@ public class SecurityConfiguration {
     private final AuthenticationEntryPoint authenticationEntryPoint;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
-    private final XpressTokenService heroTokenService;
+    private final XpressTokenService xpressTokenService;
     private final ObjectMapper objectMapper;
     private final JwtService jwtService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity
+         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .exceptionHandling(exception ->
                         exception.authenticationEntryPoint(authenticationEntryPoint))
                 .sessionManagement(sessionManagement ->
@@ -55,17 +55,18 @@ public class SecurityConfiguration {
                 .addFilterAt(login(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(
                         new XpressAuthorizationFilter(
-                                userDetailsService, heroTokenService, jwtService),
+                                userDetailsService, xpressTokenService, jwtService),
                         XpressAuthenticationFilter.class
-                )
-                .build();
+                );
+
+               return httpSecurity.build();
     }
 
     private UsernamePasswordAuthenticationFilter login() {
         final UsernamePasswordAuthenticationFilter authenticationFilter =
                 new XpressAuthenticationFilter(
                         authenticationManager,
-                        heroTokenService,
+                        xpressTokenService,
                         userDetailsService,
                         objectMapper,
                         jwtService

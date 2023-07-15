@@ -17,8 +17,8 @@ import java.util.Set;
 public class User {
 
     @Id
-    @GeneratedValue
-    private String id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
     private String fullName;
 
@@ -29,6 +29,7 @@ public class User {
 
     private String phoneNumber;
 
+    @Enumerated(EnumType.STRING)
     private Set<Role> roles;
 
     private LocalDateTime registeredAt = LocalDateTime.now();

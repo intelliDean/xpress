@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.List;
 
 public interface UserService {
 
@@ -25,4 +26,7 @@ public interface UserService {
             HttpServletRequest request,
             HttpServletResponse response
     ) throws IOException;
+    void saveUser(User user);
+    void  deleteUser(User user);
+    List<User> getAllUsers();
 }

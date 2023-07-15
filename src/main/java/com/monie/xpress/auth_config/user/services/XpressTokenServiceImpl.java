@@ -27,12 +27,11 @@ public class XpressTokenServiceImpl implements XpressTokenService {
 
     @Override
     public void revokeToken(String accessToken) {
-        final XpressToken classToken = getValidTokenByAnyToken(accessToken)
-                .orElse(null);
-        if (classToken != null) {
-            classToken.setRevoked(true);
-            xpressTokenRepository.save(classToken);
-        }
+        getValidTokenByAnyToken(accessToken)
+                .ifPresent(xpressToken -> {
+                    xpressToken.setRevoked(true);
+                    xpressTokenRepository.save(xpressToken);
+                });
     }
 
     @Override

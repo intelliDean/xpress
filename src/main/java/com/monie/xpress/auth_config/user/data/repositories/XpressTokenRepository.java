@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface XpressTokenRepository extends JpaRepository<XpressToken, Long> {
-
     @Query("""
             select token from XpressToken token
             where token.accessToken = :anyToken or token.refreshToken = :anyToken and token.revoked = false

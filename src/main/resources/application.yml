@@ -30,6 +30,12 @@ app:
   name: ${app_name}
   email: ${app_email}
 
+admin:
+  full_name: ${admin_name}
+  email: ${admin_email}
+  password: ${admin_password}
+  phone_number: ${admin_phone_number}
+
 access_expiration: ${access_token}
 refresh_expiration: ${refresh_token}
 
