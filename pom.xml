@@ -8,8 +8,8 @@
 		<version>3.1.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.payment</groupId>
-	<artifactId>xpress</artifactId>
+	<groupId>com.monie</groupId>
+	<artifactId>xpress_monie</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>xpress</name>
 	<description>xpress</description>

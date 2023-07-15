@@ -1,6 +1,6 @@
-package com.payment.xpress.auth_config.data.models;
+package com.monie.xpress.auth_config.user.data.models;
 
-import com.payment.xpress.auth_config.data.enums.Role;
+import com.monie.xpress.auth_config.user.data.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,6 +22,7 @@ public class User {
 
     private String fullName;
 
+    @Column(unique = true,  nullable = false)
     private String emailAddress;
 
     private String password;
@@ -30,5 +31,7 @@ public class User {
 
     private Set<Role> roles;
 
-    private LocalDateTime registeredAt;
+    private LocalDateTime registeredAt = LocalDateTime.now();
+
+    private boolean isEnable;
 }

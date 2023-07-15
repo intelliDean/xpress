@@ -1,10 +1,10 @@
-package com.payment.xpress;
+package com.monie.xpress;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class XpressPaymentTests {
+class XpressMonieTests {
 
 	@Test
 	void contextLoads() {
