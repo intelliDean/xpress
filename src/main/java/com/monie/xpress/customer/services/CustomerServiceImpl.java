@@ -6,16 +6,19 @@ import com.monie.xpress.auth_config.user.data.enums.Role;
 import com.monie.xpress.auth_config.user.data.models.User;
 import com.monie.xpress.auth_config.user.data.models.XpressToken;
 import com.monie.xpress.auth_config.user.services.XpressTokenService;
+import com.monie.xpress.airtime.data.dtos.AirtimePurchaseResponse;
+import com.monie.xpress.airtime.data.dtos.PurchaseAirtimeRequestDTO;
+import com.monie.xpress.airtime.service.AirtimePurchaseService;
 import com.monie.xpress.customer.data.dtos.CustomerRegisterRequest;
 import com.monie.xpress.customer.data.dtos.CustomerRegistrationResponse;
 import com.monie.xpress.customer.data.dtos.CustomerResponse;
 import com.monie.xpress.customer.data.models.Customer;
 import com.monie.xpress.customer.data.repositories.CustomerRepository;
-import com.monie.xpress.verification_token.VerificationToken;
-import com.monie.xpress.verification_token.VerificationTokenService;
 import com.monie.xpress.notification.mail.MailService;
 import com.monie.xpress.notification.mail.dto.EmailRequest;
 import com.monie.xpress.notification.mail.dto.MailInfo;
+import com.monie.xpress.verification_token.VerificationToken;
+import com.monie.xpress.verification_token.VerificationTokenService;
 import com.monie.xpress.xceptions.UserNotFoundException;
 import com.monie.xpress.xceptions.XpressException;
 import com.monie.xpress.xpress_utils.XpressUtils;
@@ -25,11 +28,11 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.io.IOException;
 import java.math.BigDecimal;
-import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @AllArgsConstructor
@@ -39,6 +42,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final TemplateEngine templateEngine;
+    private final AirtimePurchaseService airtimePurchaseService;
     private final MailService mailService;
     private final JwtService jwtService;
 
@@ -50,6 +54,7 @@ public class CustomerServiceImpl implements CustomerService {
                                 User.builder()
                                         .fullName(request.getFullName())
                                         .emailAddress(request.getEmailAddress())
+
                                         .password(passwordEncoder.encode(request.getPassword()))
                                         .isEnabled(false)
                                         .roles(Collections.singleton(Role.CUSTOMER))
@@ -60,7 +65,7 @@ public class CustomerServiceImpl implements CustomerService {
         sendVerificationMail(savedCustomer);
 
         return CustomerResponse.builder()
-                .message("Check your mail to verify")
+                .message("Successful! Check your mail to verify")
                 .build();
     }
 
@@ -83,6 +88,12 @@ public class CustomerServiceImpl implements CustomerService {
         }
         throw new XpressException("Verification failed");
     }
+
+    @Override
+    public CompletableFuture<AirtimePurchaseResponse> buyAirtime(PurchaseAirtimeRequestDTO requestDTO) throws IOException {
+        return airtimePurchaseService.buyAirtime(requestDTO);
+    }
+
     private Customer getCustomerByEmail(String email) {
         return customerRepository.findByUser_EmailAddress(email)
                 .orElseThrow(UserNotFoundException::new);
@@ -130,7 +141,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     private String generateUrl(Customer customer) {
-        final String token = generateToken();
+        final String token = XpressUtils.generateToken(10);
         final String email = customer.getUser().getEmailAddress();
         verificationTokenService.saveToken(
                 VerificationToken.builder()
@@ -144,14 +155,14 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     private static String getUrl(String email, String token) {
-        return "http://localhost:9090/api/v1/customer/verify" + "?token=" + token + "&email=" + email;
+        return "http://localhost:9090/api/v1/auth/verify" + "?token=" + token + "&email=" + email;
     }
 
-    public static String generateToken() {
-        byte[] bytes = new byte[10];
-        new SecureRandom().nextBytes(bytes);
-        return Base64.getUrlEncoder()
-                .withoutPadding()
-                .encodeToString(bytes);
-    }
+//    public static String generateToken() {
+//        byte[] bytes = new byte[10];
+//        new SecureRandom().nextBytes(bytes);
+//        return Base64.getUrlEncoder()
+//                .withoutPadding()
+//                .encodeToString(bytes);
+//    }
 }

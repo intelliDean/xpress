@@ -1,4 +1,4 @@
-package com.monie.xpress.buy_airtime.dtos;
+package com.monie.xpress.airtime.data.dtos;
 
 import lombok.*;
 

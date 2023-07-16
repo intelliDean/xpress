@@ -137,6 +137,12 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll();
     }
 
+    @Override
+    public User findUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+    }
+
 //    private static Map<String, Object> getUserAuthority(User savedUser) {
 //        return savedUser.getRoles().stream()
 //                .map(role -> new SimpleGrantedAuthority(role.name()))

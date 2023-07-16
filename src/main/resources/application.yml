@@ -40,4 +40,7 @@ admin:
 access_expiration: ${access_token}
 refresh_expiration: ${refresh_token}
 
+private_key: ${private}
+public_key: ${public}
+
 Jwt_Secret_Key: ${SECRET_KEY}

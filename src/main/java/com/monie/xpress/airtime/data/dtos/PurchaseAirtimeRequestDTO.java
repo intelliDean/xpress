@@ -1,4 +1,4 @@
-package com.monie.xpress.buy_airtime.dtos;
+package com.monie.xpress.airtime.data.dtos;
 
 import lombok.*;
 
@@ -9,9 +9,12 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PurchaseAirtimeDTO {
+public class PurchaseAirtimeRequestDTO {
+
+    private Long userId;
 
     private String phoneNumber;
 
     private BigDecimal amount;
+
 }

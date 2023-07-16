@@ -1,9 +1,11 @@
-package com.monie.xpress.buy_airtime.models;
+package com.monie.xpress.airtime.data.models;
 
+import com.monie.xpress.auth_config.user.data.models.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
@@ -23,5 +25,11 @@ public class AirtimePurchase {
 
     private BigDecimal amount;
 
+    @Enumerated(EnumType.STRING)
     private Status status;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    private User user;
+
+    private LocalDateTime transactionTime;
 }
