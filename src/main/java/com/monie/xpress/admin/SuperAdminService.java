@@ -27,30 +27,26 @@ public class SuperAdminService {
     @Value("${admin.password}")
     private String password;
 
-    @Value("${admin.phone_number}")
-    private String phoneNumber;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
 
-    @PostConstruct
-    private void createSuperAdmin() {
-      User superAdmin = User.builder()
-                        .fullName(fullName)
-                        .emailAddress(email)
-                        .password(passwordEncoder.encode(password))
-                        .phoneNumber(phoneNumber)
-                        .isEnabled(true)
-                        .roles(Collections.singleton(Role.SUPER_ADMIN))
-                        .registeredAt(LocalDateTime.now())
-                        .build();
-      if (doesAdminExist()) {
-          throw new XpressException("There cannot be more than one super admin logged in");
-      }
-        userService.saveUser(superAdmin);
-    }
+//    @PostConstruct
+//    private void createSuperAdmin() {
+//      User superAdmin = User.builder()
+//                        .fullName(fullName)
+//                        .emailAddress(email)
+//                        .password(passwordEncoder.encode(password))
+//                        .isEnabled(true)
+//                        .roles(Collections.singleton(Role.SUPER_ADMIN))
+//                        .build();
+//      if (doesAdminExist()) {
+//          throw new XpressException("There cannot be more than one super admin logged in");
+//      }
+//        userService.saveUser(superAdmin);
+//    }
     @PreDestroy
     public void deleteSuperAdmin() {
-        User user = userService.findUserByEmail("email");
+        User user = userService.findUserByEmail(email);
         userService.deleteUser(user);
     }
     private boolean doesAdminExist() {

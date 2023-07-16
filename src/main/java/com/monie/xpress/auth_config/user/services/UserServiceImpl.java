@@ -11,6 +11,7 @@ import com.monie.xpress.auth_config.user.data.repositories.UserRepository;
 import com.monie.xpress.xceptions.UserNotAuthorizedException;
 import com.monie.xpress.xceptions.UserNotFoundException;
 import com.monie.xpress.xceptions.XpressException;
+import com.monie.xpress.xpress_utils.XpressUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
@@ -101,7 +102,7 @@ public class UserServiceImpl implements UserService {
                 final User user = findUserByEmail(email);
 
                 final String accessToken = jwtService.generateAccessToken(
-                        getUserAuthority(user),
+                        XpressUtils.getUserAuthority(user),
                         user.getEmailAddress()
                 );
                 final XpressAuthToken newLoginTokens =
@@ -136,14 +137,14 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll();
     }
 
-    private static Map<String, Object> getUserAuthority(User savedUser) {
-        return savedUser.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.name()))
-                .collect(
-                        Collectors.toMap(
-                                authority -> "claim",
-                                Function.identity()
-                        )
-                );
-    }
+//    private static Map<String, Object> getUserAuthority(User savedUser) {
+//        return savedUser.getRoles().stream()
+//                .map(role -> new SimpleGrantedAuthority(role.name()))
+//                .collect(
+//                        Collectors.toMap(
+//                                authority -> "claim",
+//                                Function.identity()
+//                        )
+//                );
+//    }
 }

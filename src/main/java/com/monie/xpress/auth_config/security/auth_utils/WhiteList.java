@@ -7,7 +7,8 @@ public class WhiteList {
 
     public static String[] authenticationNotNeeded() {
         return new String[]{
-                "/api/v1/auth/**"
+                "/api/v1/auth/**",
+                "/api/v1/customer/register",
         };
     }
 

@@ -27,12 +27,10 @@ public class User {
 
     private String password;
 
-    private String phoneNumber;
-
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
 
-    private LocalDateTime registeredAt = LocalDateTime.now();
+    private final LocalDateTime registeredAt = LocalDateTime.now();
 
     private boolean isEnabled;
 }

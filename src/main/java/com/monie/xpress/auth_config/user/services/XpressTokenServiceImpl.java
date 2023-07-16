@@ -16,7 +16,7 @@ public class XpressTokenServiceImpl implements XpressTokenService {
     private final XpressTokenRepository xpressTokenRepository;
 
     @Override
-    public void saveToken(XpressToken xpressToken) {
+    public void saveToken(XpressToken xpressToken)   {
         xpressTokenRepository.save(xpressToken);
     }
 

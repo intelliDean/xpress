@@ -3,6 +3,8 @@ package com.monie.xpress.auth_config.user.controllers;
 import com.monie.xpress.auth_config.user.data.dtos.LoginRequest;
 import com.monie.xpress.auth_config.user.data.dtos.UserDTO;
 import com.monie.xpress.auth_config.user.services.UserService;
+import com.monie.xpress.customer.data.dtos.CustomerRegistrationResponse;
+import com.monie.xpress.customer.services.CustomerService;
 import com.monie.xpress.xceptions.XpressException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,6 +23,7 @@ import java.io.IOException;
 @RequestMapping("/api/v1/auth")
 public class AuthController {
      private final UserService userService;
+     private final CustomerService customerService;
 
 
     @GetMapping("current")
@@ -44,6 +47,15 @@ public class AuthController {
             HttpServletResponse response
     ) throws IOException {
         userService.logout(request, response);
+    }
+    @PostMapping("verify")
+    @Operation(summary = "Verify User email address")
+    public ResponseEntity<CustomerRegistrationResponse> register(
+            @RequestParam String token, @RequestParam String email
+    ) {
+        return ResponseEntity.ok(
+                customerService.verifyCustomerMail(token, email)
+        );
     }
 
     @GetMapping("refresh")
