@@ -1,15 +1,16 @@
 spring:
   datasource:
-    url: jdbc:${DATABASE}://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    url: jdbc:${DATABASE}://${DB_HOST}:${DB_PORT}/${DB_NAME}?createDatabaseIfNotExist=true
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jpa:
+    database-platform: ${DIALECT}
     hibernate:
       ddl-auto: update
     show-sql: true
     properties:
       hibernate:
-        format_sql: false
+        format_sql: true
         dialect: ${DIALECT}
   profiles:
     active: dev
@@ -30,7 +31,16 @@ app:
   name: ${app_name}
   email: ${app_email}
 
+admin:
+  full_name: ${admin_name}
+  email: ${admin_email}
+  password: ${admin_password}
+#  phone_number: ${admin_phone_number}
+
 access_expiration: ${access_token}
 refresh_expiration: ${refresh_token}
+
+private_key: ${private}
+public_key: ${public}
 
 Jwt_Secret_Key: ${SECRET_KEY}
