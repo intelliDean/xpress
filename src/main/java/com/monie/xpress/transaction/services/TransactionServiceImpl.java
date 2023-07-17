@@ -14,6 +14,4 @@ public class TransactionServiceImpl implements TransactionService {
     public void saveTransaction(Transaction transaction) {
         transactionRepository.save(transaction);
     }
-
-    //FundWalletResponse fundWallet(FundWalletRequestDTO requestDTO);
 }

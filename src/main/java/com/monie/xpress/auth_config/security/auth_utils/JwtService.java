@@ -61,7 +61,7 @@ public class JwtService {
                 .compact();
     }
 
-    //this method validates the supplied token
+    //this method validates the generated token
     public Boolean isValid(String token) {
         try {
            final Claims claims = Jwts.parser()

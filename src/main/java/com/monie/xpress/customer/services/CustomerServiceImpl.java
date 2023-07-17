@@ -1,8 +1,6 @@
 package com.monie.xpress.customer.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.monie.xpress.airtime.data.dtos.AirtimePurchaseResponse;
-import com.monie.xpress.airtime.data.dtos.AirtimeResponse;
 import com.monie.xpress.airtime.data.dtos.PurchaseAirtimeRequestDTO;
 import com.monie.xpress.airtime.service.AirtimePurchaseService;
 import com.monie.xpress.auth_config.security.auth_utils.JwtService;
@@ -10,10 +8,12 @@ import com.monie.xpress.auth_config.security.auth_utils.XpressAuthToken;
 import com.monie.xpress.auth_config.user.data.enums.Role;
 import com.monie.xpress.auth_config.user.data.models.User;
 import com.monie.xpress.auth_config.user.data.models.XpressToken;
+import com.monie.xpress.auth_config.user.services.UserService;
 import com.monie.xpress.auth_config.user.services.XpressTokenService;
 import com.monie.xpress.customer.data.dtos.CustomerRegisterRequest;
 import com.monie.xpress.customer.data.dtos.CustomerRegistrationResponse;
 import com.monie.xpress.customer.data.dtos.CustomerResponse;
+import com.monie.xpress.customer.data.dtos.MyAirtimeRequestDTO;
 import com.monie.xpress.customer.data.models.Customer;
 import com.monie.xpress.customer.data.repositories.CustomerRepository;
 import com.monie.xpress.notification.mail.MailService;
@@ -42,6 +42,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final XpressTokenService xpressTokenService;
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
     private final TemplateEngine templateEngine;
     private final AirtimePurchaseService airtimePurchaseService;
     private final MailService mailService;
@@ -100,6 +101,26 @@ public class CustomerServiceImpl implements CustomerService {
         //this method is called when user wants to purchase airtime
         return airtimePurchaseService.buyAirtime(requestDTO);
     }
+
+    @Override
+    public AirtimePurchaseResponse buyMyselfAirtime(MyAirtimeRequestDTO requestDTO) throws IOException {
+        Customer customer = currentCustomer();
+        return airtimePurchaseService.buyAirtime(
+                PurchaseAirtimeRequestDTO.builder()
+                        .amount(requestDTO.getAmount())
+                        .phoneNumber(customer.getPhoneNumber())
+                        .userId(customer.getUser().getId())
+                        .build()
+        );
+    }
+
+    @Override
+    public Customer currentCustomer() {
+        return customerRepository.findCustomerByUser(
+                userService.getCurrentUser()
+        ).orElseThrow(UserNotFoundException::new);
+    }
+
 
     private Customer getCustomerByEmail(String email) {	//customer retrieves by email
         return customerRepository.findByUser_EmailAddress(email)

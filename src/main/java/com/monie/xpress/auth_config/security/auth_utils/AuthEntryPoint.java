@@ -11,7 +11,8 @@ import java.io.IOException;
 
 @Component
 public class AuthEntryPoint implements AuthenticationEntryPoint {
-    //this is the global authentication error message
+    //this is the global authentication error handler
+
     @Override
     public void commence(
             HttpServletRequest request,

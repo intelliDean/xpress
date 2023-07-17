@@ -55,7 +55,8 @@ public class XpressAuthorizationFilter extends OncePerRequestFilter {
                 if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     //the user details are loaded from the db using the email
                     UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                    final UsernamePasswordAuthenticationToken authenticationToken =
+                    if (userDetails.isEnabled()) {
+                        final UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails,
                                     null,
@@ -64,6 +65,7 @@ public class XpressAuthorizationFilter extends OncePerRequestFilter {
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                      //the user and its details are saved in the security context holder
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    }
                 }
             }
         }

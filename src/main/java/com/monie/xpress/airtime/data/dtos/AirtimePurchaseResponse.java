@@ -15,5 +15,6 @@ public class AirtimePurchaseResponse {
     private String responseCode;
 
     private String responseMessage;
+
     private Object data;
 }

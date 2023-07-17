@@ -1,13 +1,12 @@
 package com.monie.xpress.airtime.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.monie.xpress.airtime.data.dtos.AirtimePurchaseResponse;
 import com.monie.xpress.airtime.data.dtos.Details;
 import com.monie.xpress.airtime.data.dtos.PurchaseAirtimeRequestDTO;
 import com.monie.xpress.airtime.data.dtos.XpressAPIRequestDTO;
 import com.monie.xpress.airtime.data.models.AirtimePurchase;
-import com.monie.xpress.airtime.data.models.CATEGORY;
+import com.monie.xpress.airtime.data.models.NETWORK_PROVIDER;
 import com.monie.xpress.airtime.data.models.Status;
 import com.monie.xpress.airtime.data.repository.AirtimePurchaseRepository;
 import com.monie.xpress.auth_config.user.data.models.User;
@@ -20,19 +19,11 @@ import com.monie.xpress.xpress_utils.XpressUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.crypto.codec.Hex;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -57,7 +48,7 @@ public class AirtimePurchaseServiceImpl implements AirtimePurchaseService {
 
         saveTransaction(user, amount);
 
-        return toBuyAirtime(xpressAPIRequestDTO);
+        return callToXpressAPI(xpressAPIRequestDTO);
     }
 
     private static AirtimePurchase buildAirtimePurchase(
@@ -86,17 +77,20 @@ public class AirtimePurchaseServiceImpl implements AirtimePurchaseService {
                                 .build()
                 ).build();
     }
+
     private static String uniqueCode(String phoneNumber) {
         switch (phoneNumber) {
             case "08033333333" -> {
-                return CATEGORY.MTN.getValue();
+                return NETWORK_PROVIDER.MTN.getValue();
             }
             case "08022222222" -> {
-                return CATEGORY.AIRTEL.getValue();
-            }case "08099999999" -> {
-                return CATEGORY.ETISALAT.getValue();
-            }case "08055555555" -> {
-                return CATEGORY.GLO.getValue();
+                return NETWORK_PROVIDER.AIRTEL.getValue();
+            }
+            case "09099999999" -> {
+                return NETWORK_PROVIDER.ETISALAT.getValue();
+            }
+            case "08055555555" -> {
+                return NETWORK_PROVIDER.GLO.getValue();
             }
         }
         throw new XpressException("Invalid number");
@@ -112,83 +106,10 @@ public class AirtimePurchaseServiceImpl implements AirtimePurchaseService {
         transactionService.saveTransaction(transaction);
     }
 
-
-    public AirtimePurchaseResponse callToBuyAirtime(XpressAPIRequestDTO xpressAPIRequestDTO) throws JsonProcessingException {
-        String jsonString = new ObjectMapper().writeValueAsString(xpressAPIRequestDTO);
-        log.info("Stringed obj{}", jsonString);
-        String PaymentHash = calculateHMAC512(jsonString, "4QFXNsr4tFv5Iki8QNOzo2ET5qExeUl4_CVASPRV");
-        log.info("payment hash{}", PaymentHash);
-        return webClient
-                .baseUrl("https://billerstest.xpresspayments.com:9603/api/v1/airtime/fulfil")
-                .defaultHeader(
-                        "Authorization", "Bearer Afezg4BxVS9mbt4ECgEGP0qPWf97Uzvx_CVASPUB",
-                        "PaymentHash", PaymentHash,
-                        "channel", "api"
-                )
-                .build()
-                .post()
-                .accept(org.springframework.http.MediaType.APPLICATION_JSON)
-                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                .body(Mono.just(xpressAPIRequestDTO), XpressAPIRequestDTO.class)
-                .retrieve()
-                .bodyToMono(AirtimePurchaseResponse.class)
-                .block();
-    }
-
-
-    public static String calculateHMAC512(String data, String key) {
-        String HMAC_SHA512 = "HmacSHA512";
-
-        try {
-            SecretKeySpec secretKeySpec = new SecretKeySpec(
-                    key.getBytes(StandardCharsets.UTF_8),
-                    HMAC_SHA512
-            );
-            Mac mac = Mac.getInstance(HMAC_SHA512);
-            mac.init(secretKeySpec);
-            return String.valueOf(
-                    Hex.encode(
-                            mac.doFinal(
-                                    data.getBytes(StandardCharsets.UTF_8)
-                            )
-                    )
-            );
-        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
-        }
-    }
-
-
-    @Async
-//    public AirtimePurchaseResponse buyAirtime(XpressAPIRequestDTO xpressAPIRequestDTO) throws IOException {
-//        String jsonString = new ObjectMapper().writeValueAsString(xpressAPIRequestDTO);
-//        OkHttpClient client = new OkHttpClient().newBuilder()
-//                .build();
-//        String PaymentHash = calculateHMAC512(jsonString, "4QFXNsr4tFv5Iki8QNOzo2ET5qExeUl4_CVASPRV");
-//        MediaType mediaType = MediaType.parse("application/json");
-//        RequestBody body = RequestBody.create(mediaType, jsonString);
-//
-//        Request request = new Request.Builder()
-//                .url("https://billerstest.xpresspayments.com:9603/api/v1/airtime/fulfil")
-//                .method("POST", body)
-//                .addHeader("Authorization", "Bearer Afezg4BxVS9mbt4ECgEGP0qPWf97Uzvx_CVASPUB")
-//                .addHeader("PaymentHash", PaymentHash)
-//                .addHeader("channel", "api")
-//                .build();
-//        System.out.println("\n\n then reach here    \n\n");
-//        Response response = client.newCall(request).execute();
-//        /// mapre res = response.
-//        System.out.println("\n\n then finally reach here    \n\n with the response" + response);
-//
-//        ResponseBody airtimePurchaseResponse = response.body();
-//        return null;
-// //   }
-
-    public AirtimePurchaseResponse toBuyAirtime(XpressAPIRequestDTO xpressAPIRequestDTO) throws IOException {
+    private AirtimePurchaseResponse callToXpressAPI(XpressAPIRequestDTO xpressAPIRequestDTO) throws IOException {
         String jsonString = new ObjectMapper().writeValueAsString(xpressAPIRequestDTO);
         OkHttpClient client = new OkHttpClient().newBuilder().build();
-        String PaymentHash = calculateHMAC512(jsonString, "4QFXNsr4tFv5Iki8QNOzo2ET5qExeUl4_CVASPRV");
+        String PaymentHash = XpressUtils.calculateHMAC512(jsonString, "4QFXNsr4tFv5Iki8QNOzo2ET5qExeUl4_CVASPRV");
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(mediaType, jsonString);
 
@@ -200,7 +121,6 @@ public class AirtimePurchaseServiceImpl implements AirtimePurchaseService {
                 .addHeader("channel", "api")
                 .build();
 
-       // OkHttpClient client = new OkHttpClient().newBuilder().build();
         Response response = client.newCall(request).execute();
         ResponseBody responseBody = response.body();
 
@@ -210,11 +130,7 @@ public class AirtimePurchaseServiceImpl implements AirtimePurchaseService {
                 responseBody.string(),
                 AirtimePurchaseResponse.class
         );
-
         response.close();
         return airtimePurchaseResponse;
     }
-
-    // Other methods and code...
-
 }

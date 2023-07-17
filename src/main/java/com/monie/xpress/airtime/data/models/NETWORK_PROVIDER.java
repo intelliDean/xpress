@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum CATEGORY {
+public enum NETWORK_PROVIDER {
 
     MTN("MTN_24207"),
 
