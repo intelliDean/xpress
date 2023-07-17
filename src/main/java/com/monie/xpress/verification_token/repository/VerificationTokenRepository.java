@@ -1,5 +1,6 @@
-package com.monie.xpress.verification_token;
+package com.monie.xpress.verification_token.repository;
 
+import com.monie.xpress.verification_token.model.VerificationToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

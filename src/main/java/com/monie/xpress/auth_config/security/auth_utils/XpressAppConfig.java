@@ -20,13 +20,6 @@ public class XpressAppConfig {
 
     @Value("${Jwt_Secret_Key}")
     private String jwtSecret;
-//    @Value("${cloudinary_name}")
-//    private String cloudName;
-//    @Value("${cloudinary_api_key}")
-//    private String cloudApiKey;
-//    @Value("${cloudinary_api_secret}")
-//    private String apiSecret;
-
 
     @Bean
     public Key getSecretKey() {

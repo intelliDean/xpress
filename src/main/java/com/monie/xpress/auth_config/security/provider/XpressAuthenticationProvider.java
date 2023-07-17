@@ -15,17 +15,22 @@ import org.springframework.stereotype.Component;
 @Component
 @AllArgsConstructor
 public class XpressAuthenticationProvider implements AuthenticationProvider {
+    //there are many authentication providers in spring security
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
 
-    @Override
+    @Override	//the authentication provider is the checked the supplied credentials against what's in the database
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        //email and password are extracted from the authentication object
         final String requestEmail = authentication.getPrincipal().toString();
         final String requestPassword = authentication.getCredentials().toString();
 
+        //
         final UserDetails userDetails = userDetailsService.loadUserByUsername(requestEmail);
         final String email = userDetails.getUsername();
         final String password = userDetails.getPassword();
+        //the supplied password and email is checked against the password and email in the database
+        //authentication is completed here
         if (passwordEncoder.matches(requestPassword, password)) {
             return new UsernamePasswordAuthenticationToken(
                     email,

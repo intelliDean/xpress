@@ -32,7 +32,7 @@ public class BrevoMailImpl implements MailService {
 
 
     @Override
-    @Async
+    @Async		//this method sends email to user
     public void sendMail(EmailRequest emailRequest) {
         emailRequest.setSender(new MailInfo(appName, appEmail));
 

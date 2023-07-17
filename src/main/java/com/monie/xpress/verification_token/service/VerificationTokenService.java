@@ -1,5 +1,7 @@
-package com.monie.xpress.verification_token;
+package com.monie.xpress.verification_token.service;
 
+
+import com.monie.xpress.verification_token.model.VerificationToken;
 
 public interface VerificationTokenService {
 

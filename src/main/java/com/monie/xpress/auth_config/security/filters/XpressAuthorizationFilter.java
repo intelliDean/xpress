@@ -25,6 +25,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Slf4j
 @AllArgsConstructor
 public class XpressAuthorizationFilter extends OncePerRequestFilter {
+    //this class is responsible for the authorization of the authenticated user
     private final UserDetailsService userDetailsService;
     private final XpressTokenService xpressTokenService;
     private final JwtService jwtService;
@@ -35,14 +36,24 @@ public class XpressAuthorizationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
+        //request header is extracted
         final String authHeader = request.getHeader(AUTHORIZATION);
+        //the header is check if not null and starts with the word "Bearer "
         if (StringUtils.hasText(authHeader) && StringUtils.startsWithIgnoreCase(authHeader, BEARER)) {
+            //jwt token is extracted from the header
             final String accessToken = authHeader.substring(BEARER.length());
 
+            //this line is doing double validation
+            //1. validates the authenticity of the jwt token and it's expiration
+            //2. validates if the token is revoked, that is, the user has logged out rendering the token useless
             if (jwtService.isValid(accessToken) && xpressTokenService.isTokenValid(accessToken)) {
+                //the token is then used to get the subject(email/username) from the token
                 final String email = jwtService.extractUsernameFromToken(accessToken);
 
+                //this line checks if the subject/email is not null and that the security context holder is empty,
+                //meaning the user is not already logged on another device
                 if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    //the user details are loaded from the db using the email
                     UserDetails userDetails = userDetailsService.loadUserByUsername(email);
                     final UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(
@@ -51,6 +62,7 @@ public class XpressAuthorizationFilter extends OncePerRequestFilter {
                                     userDetails.getAuthorities()
                             );
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                     //the user and its details are saved in the security context holder
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
             }

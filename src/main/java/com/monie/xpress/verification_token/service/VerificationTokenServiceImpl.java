@@ -1,5 +1,7 @@
-package com.monie.xpress.verification_token;
+package com.monie.xpress.verification_token.service;
 
+import com.monie.xpress.verification_token.repository.VerificationTokenRepository;
+import com.monie.xpress.verification_token.model.VerificationToken;
 import com.monie.xpress.xceptions.XpressException;
 import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;

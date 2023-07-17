@@ -1,6 +1,7 @@
 package com.monie.xpress.customer.controllers;
 
 import com.monie.xpress.airtime.data.dtos.AirtimePurchaseResponse;
+import com.monie.xpress.airtime.data.dtos.AirtimeResponse;
 import com.monie.xpress.airtime.data.dtos.PurchaseAirtimeRequestDTO;
 import com.monie.xpress.customer.data.dtos.CustomerRegisterRequest;
 import com.monie.xpress.customer.data.dtos.CustomerResponse;
@@ -31,7 +32,7 @@ public class CustomerController {
 
     @PostMapping("buy-airtime")
     @Operation(summary = "Buy airtime")
-    public ResponseEntity<CompletableFuture<AirtimePurchaseResponse>> buyAirtime(
+    public ResponseEntity<AirtimePurchaseResponse> buyAirtime(
             @RequestBody PurchaseAirtimeRequestDTO requestDTO) throws IOException {
         return ResponseEntity.ok(
                 customerService.buyAirtime(requestDTO)

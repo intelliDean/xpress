@@ -20,6 +20,7 @@ public class Transaction {
     @GeneratedValue
     private Long id;
 
+     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
 
     private BigDecimal amount;

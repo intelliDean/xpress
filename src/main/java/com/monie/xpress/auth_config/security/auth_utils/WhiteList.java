@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public class WhiteList {
 
+    //these are the urls that needs no authentication to be accessed
     public static String[] authenticationNotNeeded() {
         return new String[]{
                 "/api/v1/auth/**",
@@ -12,6 +13,7 @@ public class WhiteList {
         };
     }
 
+    //this is giving swagger free access. swagger is for documentation
     public static String[] swagger() {
         return new String[]{
                 "/swagger-ui.html",

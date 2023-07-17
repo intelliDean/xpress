@@ -29,4 +29,8 @@ public class XpressUtils {
                 .withoutPadding()
                 .encodeToString(bytes);
     }
+
+    public static String getUrl(String email, String token) {
+        return "http://localhost:9090/api/v1/auth/verify" + "?token=" + token + "&email=" + email;
+    }
 }

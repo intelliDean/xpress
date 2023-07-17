@@ -62,6 +62,7 @@ public class SecurityConfiguration {
                return httpSecurity.build();
     }
 
+    //this is the method that authenticates user at the point of log in
     private UsernamePasswordAuthenticationFilter login() {
         final UsernamePasswordAuthenticationFilter authenticationFilter =
                 new XpressAuthenticationFilter(
@@ -74,6 +75,7 @@ public class SecurityConfiguration {
         authenticationFilter.setFilterProcessesUrl("/api/v1/auth/login");
         return authenticationFilter;
     }
+    //this method globally configures the cors instead of the class configuration
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

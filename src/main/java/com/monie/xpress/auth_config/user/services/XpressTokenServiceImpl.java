@@ -20,12 +20,12 @@ public class XpressTokenServiceImpl implements XpressTokenService {
         xpressTokenRepository.save(xpressToken);
     }
 
-    @Override
+    @Override		//this method retrieves a token object by either access or refresh token
     public Optional<XpressToken> getValidTokenByAnyToken(String anyToken) {
         return xpressTokenRepository.findValidTokenByToken(anyToken);
     }
 
-    @Override
+    @Override		//this method revokes the token
     public void revokeToken(String accessToken) {
         getValidTokenByAnyToken(accessToken)
                 .ifPresent(xpressToken -> {
@@ -34,7 +34,7 @@ public class XpressTokenServiceImpl implements XpressTokenService {
                 });
     }
 
-    @Override
+    @Override		//this method checks if a token is revoked or not
     public boolean isTokenValid(String anyToken) {
         return getValidTokenByAnyToken(anyToken)
                 .map(xpressToken -> !xpressToken.isRevoked())
@@ -42,7 +42,7 @@ public class XpressTokenServiceImpl implements XpressTokenService {
     }
 
     @Scheduled(cron = "0 0 0 * * ?", zone = "Africa/Lagos") //schedule to run every midnight
-    private void deleteAllRevokedTokens() {
+    private void deleteAllRevokedTokens() {		//this is a cron task to delete all revoked or expired tokens from the database
         final List<XpressToken> allRevokedTokens =
                 xpressTokenRepository.findAllInvalidTokens();
         if (!allRevokedTokens.isEmpty()) {
@@ -52,6 +52,7 @@ public class XpressTokenServiceImpl implements XpressTokenService {
 
     @Scheduled(cron = "0 0 */6 * * *", zone = "Africa/Lagos")   //scheduled to run every 6 hours daily
     private void setTokenExpiration() {
+        //this checks the database for expired tokens and set it to true so cron task could pick them and delete
         final List<XpressToken> notExpiredTokens =
                 xpressTokenRepository.findAllTokenNotExpired();
         notExpiredTokens.stream()

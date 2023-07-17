@@ -1,4 +1,4 @@
-package com.monie.xpress.verification_token;
+package com.monie.xpress.verification_token.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

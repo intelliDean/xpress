@@ -40,22 +40,24 @@ public class UserServiceImpl implements UserService {
     private final JwtService jwtService;
 
     @Override
-    public User findUserByEmail(String email) {
+    public User findUserByEmail(String email) {		//this method finds the user from the database by email
         return findUser(email).orElseThrow(UserNotFoundException::new);
     }
 
-    private Optional<User> findUser(String email) {
+    private Optional<User> findUser(String email) {	//this returns the optional user
         return userRepository.findUserByEmailAddress(email);
     }
 
-    @Override
+    @Override	//this methods logs a user out of the platform rendering the jwt token useless
     public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String header = request.getHeader(AUTHORIZATION);
         if (StringUtils.hasText(header) && StringUtils.startsWithIgnoreCase(header, BEARER)) {
+            //the access token is extracted from the header
             final String accessToken = header.substring(BEARER.length());
-
+            //the token is subjected to validation
             if (jwtService.isValid(accessToken)) {
                 xpressTokenService.revokeToken(accessToken);
+                //if token is valid, then the security context holder is cleared of the user with the token
                 SecurityContextHolder.clearContext();
 
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -64,7 +66,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    @Override
+    @Override 	//this gets the current user logged in at a particular time instead of using id to find user
     public User getCurrentUser() {
         try {
             final AuthenticatedUser authenticatedUser =
@@ -78,7 +80,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    @Override
+    @Override	//the user object is mapped to a dto and returned instead of the real user object
     public UserDTO currentUser() {
         return new ModelMapper().map(
                 getCurrentUser(),
@@ -86,21 +88,25 @@ public class UserServiceImpl implements UserService {
         );
     }
 
-    @Override
+    @Override	//this method regenerates access token when the available ones expire
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String authHeader = request.getHeader(AUTHORIZATION);
         if (!StringUtils.hasText(authHeader) ||
                 !StringUtils.startsWithIgnoreCase(authHeader, BEARER))
             return;
-
+        //the refresh token is extracted from the header
         final String refreshToken = authHeader.substring(BEARER.length());
 
+        //the refresh token ois validated
         if (jwtService.isValid(refreshToken)) {
             final String email = jwtService.extractUsernameFromToken(refreshToken);
 
+            //email is extracted from the refresh token
             if (StringUtils.hasText(email)) {
+                //email is used to load user
                 final User user = findUserByEmail(email);
 
+                //user details are used to generate a new access token maintaining the old refresh token
                 final String accessToken = jwtService.generateAccessToken(
                         XpressUtils.getUserAuthority(user),
                         user.getEmailAddress()
@@ -110,11 +116,11 @@ public class UserServiceImpl implements UserService {
                                 .accessToken(accessToken)
                                 .refreshToken(refreshToken)
                                 .build();
-                final XpressToken xpressToken =
+                final XpressToken xpressToken =	//refresh token is used to retrieve the token object from the database
                         xpressTokenService.getValidTokenByAnyToken(refreshToken)
                                 .orElseThrow(() -> new XpressException("Token could not be found"));
-                xpressToken.setAccessToken(accessToken);
-                xpressTokenService.saveToken(xpressToken);
+                xpressToken.setAccessToken(accessToken);	//access token is updated
+                xpressTokenService.saveToken(xpressToken);	//and then saved
 
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 new ObjectMapper().writeValue(response.getOutputStream(), newLoginTokens);
@@ -142,15 +148,4 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
     }
-
-//    private static Map<String, Object> getUserAuthority(User savedUser) {
-//        return savedUser.getRoles().stream()
-//                .map(role -> new SimpleGrantedAuthority(role.name()))
-//                .collect(
-//                        Collectors.toMap(
-//                                authority -> "claim",
-//                                Function.identity()
-//                        )
-//                );
-//    }
 }

@@ -10,8 +10,11 @@ import org.springframework.stereotype.Component;
 @Component
 @AllArgsConstructor
 public class XpressAuthenticationManager implements AuthenticationManager {
+    //the authentication manager is not responsible for the authentication
+    //of the user but stands like a router. it directs the authentication request
+    //to the provider who does the authentication
      private final AuthenticationProvider authenticationProvider;
-    @Override
+    @Override //the authentication manager passes the created authentication object to the provider
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         return authenticationProvider.authenticate(authentication);
     }

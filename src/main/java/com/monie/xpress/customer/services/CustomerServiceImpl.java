@@ -1,14 +1,16 @@
 package com.monie.xpress.customer.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.monie.xpress.airtime.data.dtos.AirtimePurchaseResponse;
+import com.monie.xpress.airtime.data.dtos.AirtimeResponse;
+import com.monie.xpress.airtime.data.dtos.PurchaseAirtimeRequestDTO;
+import com.monie.xpress.airtime.service.AirtimePurchaseService;
 import com.monie.xpress.auth_config.security.auth_utils.JwtService;
 import com.monie.xpress.auth_config.security.auth_utils.XpressAuthToken;
 import com.monie.xpress.auth_config.user.data.enums.Role;
 import com.monie.xpress.auth_config.user.data.models.User;
 import com.monie.xpress.auth_config.user.data.models.XpressToken;
 import com.monie.xpress.auth_config.user.services.XpressTokenService;
-import com.monie.xpress.airtime.data.dtos.AirtimePurchaseResponse;
-import com.monie.xpress.airtime.data.dtos.PurchaseAirtimeRequestDTO;
-import com.monie.xpress.airtime.service.AirtimePurchaseService;
 import com.monie.xpress.customer.data.dtos.CustomerRegisterRequest;
 import com.monie.xpress.customer.data.dtos.CustomerRegistrationResponse;
 import com.monie.xpress.customer.data.dtos.CustomerResponse;
@@ -17,8 +19,8 @@ import com.monie.xpress.customer.data.repositories.CustomerRepository;
 import com.monie.xpress.notification.mail.MailService;
 import com.monie.xpress.notification.mail.dto.EmailRequest;
 import com.monie.xpress.notification.mail.dto.MailInfo;
-import com.monie.xpress.verification_token.VerificationToken;
-import com.monie.xpress.verification_token.VerificationTokenService;
+import com.monie.xpress.verification_token.model.VerificationToken;
+import com.monie.xpress.verification_token.service.VerificationTokenService;
 import com.monie.xpress.xceptions.UserNotFoundException;
 import com.monie.xpress.xceptions.XpressException;
 import com.monie.xpress.xpress_utils.XpressUtils;
@@ -32,7 +34,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @AllArgsConstructor
@@ -46,15 +47,15 @@ public class CustomerServiceImpl implements CustomerService {
     private final MailService mailService;
     private final JwtService jwtService;
 
-    @Override
+    @Override	//the method that register user
     public CustomerResponse signUp(CustomerRegisterRequest request) {
+        //customer object is created and initialized with its field parameters
         Customer savedCustomer = customerRepository.save(
                 Customer.builder()
                         .user(
-                                User.builder()
+                                User.builder()	//user object is created inside the customer object to manage memory
                                         .fullName(request.getFullName())
                                         .emailAddress(request.getEmailAddress())
-
                                         .password(passwordEncoder.encode(request.getPassword()))
                                         .isEnabled(false)
                                         .roles(Collections.singleton(Role.CUSTOMER))
@@ -62,20 +63,25 @@ public class CustomerServiceImpl implements CustomerService {
                         .phoneNumber(request.getPhoneNumber())
                         .balance(BigDecimal.ZERO)
                         .build());
-        sendVerificationMail(savedCustomer);
+        sendVerificationMail(savedCustomer);	//verification mail is sent to user after registration
 
         return CustomerResponse.builder()
                 .message("Successful! Check your mail to verify")
                 .build();
     }
 
-    @Override
+    @Override	//this method verifies the user email after sign up
     public CustomerRegistrationResponse verifyCustomerMail(String token, String email) {
+        //the verification token saved in the database is retrieved, using email and string token
         VerificationToken verificationToken = verificationTokenService.findByTokenAndEmail(token, email);
+        //if the token object is found, the email is also used to find user
         Customer customer = getCustomerByEmail(email);
+        //if both user and verification token are found, then the user account is activated
         if (customer != null && verificationToken != null) {
-            customer.getUser().setEnabled(true);
-            verificationToken.setRevoked(true);
+            customer.getUser().setEnabled(true);	//the user account is activated
+            verificationToken.setRevoked(true);		//the verification token is revoked
+            //xpress token is created and saved.
+            // user is also saved automatically because of the cascade relationship between them
             XpressToken xpressToken = saveXpressToken(customer);
             return CustomerRegistrationResponse.builder()
                 .message("Registration successful")
@@ -90,23 +96,25 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public CompletableFuture<AirtimePurchaseResponse> buyAirtime(PurchaseAirtimeRequestDTO requestDTO) throws IOException {
+    public AirtimePurchaseResponse buyAirtime(PurchaseAirtimeRequestDTO requestDTO) throws IOException {
+        //this method is called when user wants to purchase airtime
         return airtimePurchaseService.buyAirtime(requestDTO);
     }
 
-    private Customer getCustomerByEmail(String email) {
+    private Customer getCustomerByEmail(String email) {	//customer retrieves by email
         return customerRepository.findByUser_EmailAddress(email)
                 .orElseThrow(UserNotFoundException::new);
     }
 
-    private XpressToken saveXpressToken(Customer customer) {
+    private XpressToken saveXpressToken(Customer customer) {		//xpress token is created and saved
         final User user = customer.getUser();
+        //this generates the access token
         final String accessToken = jwtService.generateAccessToken(
                 XpressUtils.getUserAuthority(user),
                 user.getEmailAddress()
         );
-        final String refreshToken =
-                jwtService.generateRefreshToken(user.getEmailAddress());
+        //this generates the refresh token
+        final String refreshToken = jwtService.generateRefreshToken(user.getEmailAddress());
         XpressToken xpressToken = XpressToken.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -114,16 +122,17 @@ public class CustomerServiceImpl implements CustomerService {
                 .revoked(false)
                 .user(user)
                 .build();
-        xpressTokenService.saveToken(xpressToken);
+        xpressTokenService.saveToken(xpressToken);		//token is saved
         return xpressToken;
     }
 
     private void sendVerificationMail(Customer customer) {
+        //this sends a verification email to user using thymeleaf template
         final String fullName = customer.getUser().getFullName();
-        final String url = generateUrl(customer);
+        final String url = generateUrl(customer);	//this generates the url for the verification endpoint
 
         final Context context = new Context();
-        context.setVariables(
+        context.setVariables(	//these are the placeholders in the email template
                 Map.of(
                         "fullName", fullName,
                         "verifyUrl", url,
@@ -131,13 +140,12 @@ public class CustomerServiceImpl implements CustomerService {
                 )
         );
         final String content = templateEngine.process("verify_mail", context);
-        mailService.sendMail(
-                EmailRequest.builder()
+       EmailRequest request = EmailRequest.builder()
                         .to(Collections.singletonList(new MailInfo(fullName, customer.getUser().getEmailAddress())))
                         .subject("Email verification")
                         .htmlContent(content)
-                        .build()
-        );
+                        .build();
+        mailService.sendMail(request);
     }
 
     private String generateUrl(Customer customer) {
@@ -151,18 +159,6 @@ public class CustomerServiceImpl implements CustomerService {
                         .expired(false)
                         .build()
         );
-        return getUrl(email, token);
+        return XpressUtils.getUrl(email, token);
     }
-
-    private static String getUrl(String email, String token) {
-        return "http://localhost:9090/api/v1/auth/verify" + "?token=" + token + "&email=" + email;
-    }
-
-//    public static String generateToken() {
-//        byte[] bytes = new byte[10];
-//        new SecureRandom().nextBytes(bytes);
-//        return Base64.getUrlEncoder()
-//                .withoutPadding()
-//                .encodeToString(bytes);
-//    }
 }

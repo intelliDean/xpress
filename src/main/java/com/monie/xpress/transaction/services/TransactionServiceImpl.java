@@ -1,6 +1,19 @@
 package com.monie.xpress.transaction.services;
 
+import com.monie.xpress.transaction.data.model.Transaction;
+import com.monie.xpress.transaction.repository.TransactionRepository;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@AllArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
 
-    FundWalletResponse fundWallet(FundWalletRequestDTO requestDTO);
+    private final TransactionRepository transactionRepository;
+    @Override
+    public void saveTransaction(Transaction transaction) {
+        transactionRepository.save(transaction);
+    }
+
+    //FundWalletResponse fundWallet(FundWalletRequestDTO requestDTO);
 }
