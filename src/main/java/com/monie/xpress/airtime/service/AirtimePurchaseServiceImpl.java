@@ -33,7 +33,6 @@ public class AirtimePurchaseServiceImpl implements AirtimePurchaseService {
 
     private final AirtimePurchaseRepository airtimePurchaseRepository;
     private final TransactionService transactionService;
-    private final WebClient.Builder webClient;
     private final UserService userService;
 
     @Override
