@@ -16,32 +16,32 @@ git clone https://github.com/intelliDean/xpress.git
 
 
 2. Set the following environment variables in the application configuration file:
-DB_HOST:
-DB_NAME:
-DB_USERNAME:
-DB_PASSWORD:
-DB_PORT:
-DATABASE:
-DIALECT:
+* DB_HOST:
+* DB_NAME:
+* DB_USERNAME:
+* DB_PASSWORD:
+* DB_PORT:
+* DATABASE:
+* DIALECT:
 
-SECRET_KEY:  <a string to sign the jwt>
+* SECRET_KEY:  <a string to sign the jwt>
 
-sendinblue_api: <brevo api key>
-sendinblue_mail: https://api.sendinblue.com/v3/smtp/email
+* sendinblue_api: <brevo api key>
+* sendinblue_mail: https://api.sendinblue.com/v3/smtp/email
 
-app_name: app name
-app_email: app email
+* app_name: app name
+* app_email: app email
 
-admin_name: name
-admin_email: email
-admin_password: password
+* admin_name: name
+* admin_email: email
+* admin_password: password
 
-private: <xpress payment solution private key>
-public: <xpress payment solution public key>
-url: "https://billerstest.xpresspayments.com:9603/api/v1/airtime/fulfil"
+* private: <xpress payment solution private key>
+* public: <xpress payment solution public key>
+* url: "https://billerstest.xpresspayments.com:9603/api/v1/airtime/fulfil"
 
-access_token: <access token expiration time>
-refresh_token: <refresh token expiration time>
+* access_token: <access token expiration time>
+* refresh_token: <refresh token expiration time>
 
 
 3. Configure the database settings, Brevo API with the API key and mail URL, and obtain the Xpress Payment Solution private and public keys.
