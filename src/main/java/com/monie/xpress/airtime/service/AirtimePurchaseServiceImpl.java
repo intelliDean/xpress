@@ -19,6 +19,7 @@ import com.monie.xpress.xpress_utils.XpressUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -30,6 +31,12 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 public class AirtimePurchaseServiceImpl implements AirtimePurchaseService {
+    @Value("${private_key}")
+    private String privateKey;
+    @Value("${public_key}")
+    private String publicKey;
+    @Value("${base_url}")
+    private String url;
 
     private final AirtimePurchaseRepository airtimePurchaseRepository;
     private final TransactionService transactionService;
@@ -39,7 +46,7 @@ public class AirtimePurchaseServiceImpl implements AirtimePurchaseService {
     public AirtimePurchaseResponse buyAirtime(PurchaseAirtimeRequestDTO requestDTO) throws IOException {
         User user = userService.findUserById(requestDTO.getUserId());
         BigDecimal amount = requestDTO.getAmount();
-        String uniqueCode = XpressUtils.generateToken(12);
+        String uniqueCode = uniqueCode(requestDTO.getPhoneNumber());
         AirtimePurchase airtimePurchase = buildAirtimePurchase(requestDTO, user, amount, uniqueCode);
         AirtimePurchase savedAirtimePurchase = airtimePurchaseRepository.save(airtimePurchase);
 
@@ -68,7 +75,7 @@ public class AirtimePurchaseServiceImpl implements AirtimePurchaseService {
         String phoneNumber = savedAirtimePurchase.getPhoneNumber();
         return XpressAPIRequestDTO.builder()
                 .requestId(savedAirtimePurchase.getId())
-                .uniqueCode(uniqueCode(phoneNumber))
+                .uniqueCode(savedAirtimePurchase.getUniqueCode())
                 .details(
                         Details.builder()
                                 .amount(savedAirtimePurchase.getAmount())
@@ -108,14 +115,14 @@ public class AirtimePurchaseServiceImpl implements AirtimePurchaseService {
     private AirtimePurchaseResponse callToXpressAPI(XpressAPIRequestDTO xpressAPIRequestDTO) throws IOException {
         String jsonString = new ObjectMapper().writeValueAsString(xpressAPIRequestDTO);
         OkHttpClient client = new OkHttpClient().newBuilder().build();
-        String PaymentHash = XpressUtils.calculateHMAC512(jsonString, "4QFXNsr4tFv5Iki8QNOzo2ET5qExeUl4_CVASPRV");
+        String PaymentHash = XpressUtils.calculateHMAC512(jsonString, privateKey);
         MediaType mediaType = MediaType.parse("application/json");
         RequestBody body = RequestBody.create(mediaType, jsonString);
 
         Request request = new Request.Builder()
-                .url("https://billerstest.xpresspayments.com:9603/api/v1/airtime/fulfil")
+                .url(url)
                 .method("POST", body)
-                .addHeader("Authorization", "Bearer Afezg4BxVS9mbt4ECgEGP0qPWf97Uzvx_CVASPUB")
+                .addHeader("Authorization", publicKey)
                 .addHeader("PaymentHash", PaymentHash)
                 .addHeader("channel", "api")
                 .build();
