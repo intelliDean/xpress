@@ -24,7 +24,7 @@ DB_PORT:
 DATABASE:
 DIALECT:
 
-SECRET_KEY:
+SECRET_KEY:  <a string to sign the jwt>
 
 sendinblue_api: <brevo api key>
 sendinblue_mail: https://api.sendinblue.com/v3/smtp/email
