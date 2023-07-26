@@ -6,7 +6,7 @@ import com.monie.xpress.airtime.data.dtos.Details;
 import com.monie.xpress.airtime.data.dtos.PurchaseAirtimeRequestDTO;
 import com.monie.xpress.airtime.data.dtos.XpressAPIRequestDTO;
 import com.monie.xpress.airtime.data.models.AirtimePurchase;
-import com.monie.xpress.airtime.data.models.NETWORK_PROVIDER;
+import com.monie.xpress.airtime.data.models.BILLER;
 import com.monie.xpress.airtime.data.models.Status;
 import com.monie.xpress.airtime.data.repository.AirtimePurchaseRepository;
 import com.monie.xpress.auth_config.user.data.models.User;
@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -84,19 +83,20 @@ public class AirtimePurchaseServiceImpl implements AirtimePurchaseService {
                 ).build();
     }
 
+
     private static String uniqueCode(String phoneNumber) {
-        switch (phoneNumber) {
-            case "08033333333" -> {
-                return NETWORK_PROVIDER.MTN.getValue();
+        switch (phoneNumber.substring(0, 4)) {
+            case "0803", "0806", "0703", "0706", "0813", "0816", "0810", "0814" -> {
+                return BILLER.MTN.getUniqueCode();
             }
-            case "08022222222" -> {
-                return NETWORK_PROVIDER.AIRTEL.getValue();
+            case "0802", "0808", "0708", "0812" -> {
+                return BILLER.AIRTEL.getUniqueCode();
             }
-            case "09099999999" -> {
-                return NETWORK_PROVIDER.ETISALAT.getValue();
+            case "0809", "0818", "0817", "0909" -> {
+                return BILLER.ETISALAT.getUniqueCode();
             }
-            case "08055555555" -> {
-                return NETWORK_PROVIDER.GLO.getValue();
+            case "0805", "0807", "0705", "0815", "0811" -> {
+                return BILLER.GLO.getUniqueCode();
             }
         }
         throw new XpressException("Invalid number");
