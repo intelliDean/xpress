@@ -33,45 +33,56 @@ class AirtimePurchaseServiceImplTest {
     private final AirtimePurchaseService airtimePurchaseService
             = new AirtimePurchaseServiceImpl(airtimePurchaseRepository, transactionService, userService);
 
-//    @Test
-//    void buyAirtime() throws IOException {
-//        User user = User.builder()
-//                .id(1L)
-//                .roles(Collections.singleton(Role.CUSTOMER))
-//                .isEnabled(true)
-//                .password("Password")
-//                .emailAddress("email@gmail.com")
-//                .fullName("Full Name")
-//                .build();
-//
-//        AirtimePurchase airtimePurchase = AirtimePurchase.builder()
-//                .phoneNumber("08095729090")
-//                .amount(BigDecimal.valueOf(2300))
-//                .uniqueCode("Ai5_jiT")
-//                .user(user)
-//                .transactionTime(LocalDateTime.now())
-//                .status(Status.PENDING)
-//                .build();
-//
-//        Transaction transaction = Transaction.builder()
-//                .user(mock(User.class))
-//                .transactionType(TransactionType.BUY_AIRTIME)
-//                .amount(BigDecimal.valueOf(2300))
-//                .transactionTime(airtimePurchase.getTransactionTime())
-//                .build();
-//        ;
-//        when(airtimePurchaseRepository.save(airtimePurchase))
-//                .thenReturn(airtimePurchase);
-//        doNothing().when(transactionService).saveTransaction(transaction);
-//
-//        AirtimePurchaseResponse response = airtimePurchaseService.buyAirtime(
-//                PurchaseAirtimeRequestDTO.builder()
-//                        .userId(1L)
-//                        .phoneNumber("08095729090")
-//                        .amount(BigDecimal.valueOf(1200))
-//                        .build()
-//        );
-//        assertThat(response).isNotNull().isInstanceOf(AirtimePurchaseResponse.class);
-//
-//    }
+    @Test
+    void buyAirtime() throws IOException {
+        User user = User.builder()
+                .id(1L)
+                .roles(Collections.singleton(Role.CUSTOMER))
+                .isEnabled(true)
+                .password("Password")
+                .emailAddress("email@gmail.com")
+                .fullName("Full Name")
+                .build();
+
+        AirtimePurchase airtimePurchase = AirtimePurchase.builder()
+                .id("String")
+                .phoneNumber("08033333333")
+                .amount(BigDecimal.valueOf(2300))
+                .uniqueCode("MTN_24207")
+                .user(user)
+                .transactionTime(LocalDateTime.now())
+                .status(Status.PENDING)
+                .build();
+        AirtimePurchase savedAirtimePurchase = AirtimePurchase.builder()
+                .id(airtimePurchase.getId())
+                .phoneNumber(airtimePurchase.getPhoneNumber())
+                .amount(airtimePurchase.getAmount())
+                .uniqueCode(airtimePurchase.getUniqueCode())
+                .user(airtimePurchase.getUser())
+                .transactionTime(airtimePurchase.getTransactionTime())
+                .status(airtimePurchase.getStatus())
+                .build();
+
+        Transaction transaction = Transaction.builder()
+                .user(mock(User.class))
+                .transactionType(TransactionType.BUY_AIRTIME)
+                .amount(BigDecimal.valueOf(2300))
+                .transactionTime(airtimePurchase.getTransactionTime())
+                .build();
+        ;
+        when(userService.findUserById(1L)).thenReturn(user);
+        when(airtimePurchaseRepository.save(airtimePurchase))
+                .thenReturn(savedAirtimePurchase);
+        doNothing().when(transactionService).saveTransaction(transaction);
+
+        AirtimePurchaseResponse response = airtimePurchaseService.buyAirtime(
+                PurchaseAirtimeRequestDTO.builder()
+                        .userId(1L)
+                        .phoneNumber("08095729090")
+                        .amount(BigDecimal.valueOf(1200))
+                        .build()
+        );
+        assertThat(response).isNotNull().isInstanceOf(AirtimePurchaseResponse.class);
+
+    }
 }

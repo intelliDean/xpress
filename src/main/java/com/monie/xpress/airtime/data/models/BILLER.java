@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum NETWORK_PROVIDER {
+public enum BILLER {
 
     MTN("MTN_24207"),
 
@@ -15,5 +15,5 @@ public enum NETWORK_PROVIDER {
 
     ETISALAT("9MOBILE_69358");
 
-    private final String value;
+    private final String uniqueCode;
 }

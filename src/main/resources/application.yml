@@ -42,5 +42,7 @@ refresh_expiration: ${refresh_token}
 
 private_key: ${private}
 public_key: ${public}
+base_url: ${url}
+
 
 Jwt_Secret_Key: ${SECRET_KEY}
