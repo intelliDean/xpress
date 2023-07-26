@@ -36,6 +36,14 @@ public class AirtimePurchaseServiceImpl implements AirtimePurchaseService {
     private String publicKey;
     @Value("${base_url}")
     private String url;
+    @Value("${MTN_UNIQUE_CODE}")
+    private String mtnUniqueCode;
+    @Value("${GLO_UNIQUE_CODE}")
+    private String gloUniqueCode;
+    @Value("${AIRTEL_UNIQUE_CODE}")
+    private String airtelUniqueCode;
+    @Value("${ETISALAT_UNIQUE_CODE}")
+    private String etisalatUniqueCode;
 
     private final AirtimePurchaseRepository airtimePurchaseRepository;
     private final TransactionService transactionService;
@@ -56,7 +64,7 @@ public class AirtimePurchaseServiceImpl implements AirtimePurchaseService {
         return callToXpressAPI(xpressAPIRequestDTO);
     }
 
-    private static AirtimePurchase buildAirtimePurchase(
+    private AirtimePurchase buildAirtimePurchase(
             PurchaseAirtimeRequestDTO requestDTO,
             User user, BigDecimal amount, String uniqueCode) {
         return AirtimePurchase.builder()
@@ -69,7 +77,7 @@ public class AirtimePurchaseServiceImpl implements AirtimePurchaseService {
                 .build();
     }
 
-    private static XpressAPIRequestDTO buildXpressAPIRequestDTO(
+    private XpressAPIRequestDTO buildXpressAPIRequestDTO(
             AirtimePurchase savedAirtimePurchase) {
         String phoneNumber = savedAirtimePurchase.getPhoneNumber();
         return XpressAPIRequestDTO.builder()
@@ -84,19 +92,20 @@ public class AirtimePurchaseServiceImpl implements AirtimePurchaseService {
     }
 
 
-    private static String uniqueCode(String phoneNumber) {
+    private String uniqueCode(String phoneNumber) {
         switch (phoneNumber.substring(0, 4)) {
             case "0803", "0806", "0703", "0706", "0813", "0816", "0810", "0814" -> {
-                return BILLER.MTN.getUniqueCode();
+                log.info("MTN Unique{}", mtnUniqueCode);
+                return mtnUniqueCode;
             }
             case "0802", "0808", "0708", "0812" -> {
-                return BILLER.AIRTEL.getUniqueCode();
+                return airtelUniqueCode;
             }
             case "0809", "0818", "0817", "0909" -> {
-                return BILLER.ETISALAT.getUniqueCode();
+                return etisalatUniqueCode;
             }
             case "0805", "0807", "0705", "0815", "0811" -> {
-                return BILLER.GLO.getUniqueCode();
+                return gloUniqueCode;
             }
         }
         throw new XpressException("Invalid number");
