@@ -95,7 +95,6 @@ public class AirtimePurchaseServiceImpl implements AirtimePurchaseService {
     private String uniqueCode(String phoneNumber) {
         switch (phoneNumber.substring(0, 4)) {
             case "0803", "0806", "0703", "0706", "0813", "0816", "0810", "0814" -> {
-                log.info("MTN Unique{}", mtnUniqueCode);
                 return mtnUniqueCode;
             }
             case "0802", "0808", "0708", "0812" -> {
