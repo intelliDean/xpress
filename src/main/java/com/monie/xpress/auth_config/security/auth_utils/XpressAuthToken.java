@@ -12,4 +12,6 @@ public class XpressAuthToken {
     private String accessToken;
 
     private String refreshToken;
+
+
 }
